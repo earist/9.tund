@@ -54,7 +54,19 @@
 				$hash = hash("sha512", $password1);
 				
 				//kasutaja sisselogimise function,
-				$User->loginUser($email1, $hash);
+				$login_response = $User->loginUser($email1, $hash);
+				
+				//kasutaja logis edukalt sisse
+				if(isset($login_response->success)){
+					
+					//vaja teada, id-d emaili
+					$_SESSION["logged_in_user_id"] = $login_response->user->id;
+					$_SESSION["logged_in_user_email"] = $login_response->user->email;
+					
+					//saadan sõnumi teise faili kasutades SESSIOONI
+					$_SESSION["login_success_message"] = $login_response->success->message;
+					header("Location:data.php");
+				}
 			}
 			
 			
@@ -119,7 +131,7 @@
 				//kasutaja loomise function, failist function.php
 				//saadame kaasa muutujad
 				//fn User klassist
-				$User->createUser($firstname, $lastname, $email2, $hash);
+				$create_response = $User->createUser($firstname, $lastname, $email2, $hash);
 			}
 			
 				
@@ -145,6 +157,15 @@
 </head>
 <body bgcolor="#BF9E7C"><br><br>
 		<center><h2>Log in</h2></center>
+		<?php if(isset($login_response->error)): ?>
+		
+		<p style="color:red;"> <?=$login_response->error->message;?> </p>
+		
+		<?php elseif(isset($login_response->success)): ?>
+		
+		<p style="color:green;"> <?=$login_response->success->message;?> </p>
+		
+		<?php endif; ?>
 		<center><form action="login.php" method="post"></center>
 			<center><input name="email1" type="email" value="<?php echo $email1 ?>" placeholder="E-post"> <?php echo $email1_error; ?></center><br><br>
 			<center><input name="password1" type="password" placeholder="Parool"> <?php echo $password1_error; ?> </center><br><br>
@@ -153,6 +174,17 @@
 		</form>
 	
 	<center><h2>Create user</h2></center>
+	
+	<?php if(isset($create_response->error)): ?>
+	
+	<p style="color:red;"> <?=$create_response->error->message;?> </p>
+	
+	<?php elseif(isset($create_response->success)): ?>
+	
+	<p style="color:green;"> <?=$create_response->success->message;?> </p>
+	
+	<?php endif; ?>
+	
 		<form action ="login.php" method="post">
 			<center><input type="text" name="firstname" value ="<?php echo $firstname ?>" placeholder="Eesnimi"><?php echo $firstname_error;?></center><br>
 			<center><input type="text" name="lastname" value ="<?php echo $lastname ?>" placeholder="Perekonnanimi"><?php echo $lastname_error;?></center><br>
